@@ -2,4 +2,5 @@
 
 Progress :
 
-- Membuat Login dan Create-Account Page
+- Login dan Create-Account Page (Tested)
+- Chat Websocket

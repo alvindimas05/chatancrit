@@ -8,28 +8,39 @@ isset = required.isset,
 randstring = required.randstring;
 
 var clients = {},
-chat = {};
+chat = [];
 
 /*
 chat =
-{
+[
     {
-        users:["0", "1"],
-        data:{
+        from:"abc",
+        to:"xyz",
+        data:[
             {
-                from:0,
-                read:true
+                read:false
                 message:"tes"
             },
             {
-                from:1,
                 read:false,
                 message:"tes"
             }
-        }
+        ]
     }
-}
+]
 */
+
+conn.query("SELECT * FROM chat", (err, res) => {
+    if(err) throw err;
+    chat = JSON.parse(res[0])
+
+    setInterval(() => {
+        conn.query("UPDATE SET data=?", [JSON.stringify(chat)], err => {
+            if(err) throw err;
+        })
+    }, 300000);
+});
+
 app.post("/create", (req, res) => {
     //username, password, vpassword
     if(isset(req.body.username) && isset(req.body.password) && isset(req.body.vpassword)){
@@ -87,17 +98,40 @@ wss.on("connection", ws => {
     ws.on("message", msg => {
         msg = JSON.parse(msg);
         switch(msg.type){
-            /*
-            {
-                type:"open",
-                id:"abc"
-            }
-            */
+            //id
             case "open":
                 clients[msg.id] = ws;
                 break;
+            //from, to, message
+            case "chat":
+                if(isset(clients[msg.to])){
+                    clients[msg.to].send(JSON.stringify({
+                        type:"chat",
+                        message:msg.message
+                    }));
+                }
+                for(i in chat){
+                    if(chat[i].from == msg.from && chat[i].to == msg.to){
+                        chat[i].data.push({
+                            read:false,
+                            message:msg.message
+                        });
+                    }
+                }
+                break;
+            case "read":
+                for(i in chat){
+                    //from, to
+                    if(chat[i].to == msg.from && chat[i].from == msg.to){
+                        for(j in chat[i].data){
+                            chat[i].data[i].read = true;
+                        }
+                        break;
+                    }
+                }
+                break;
         }
-    })
+    });
 });
 
 app.listen(80, () => console.log("Listening on 80"));
