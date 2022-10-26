@@ -10,26 +10,6 @@ randstring = required.randstring;
 var clients = {},
 chat = [];
 
-/*
-chat =
-[
-    {
-        from:"abc",
-        to:"xyz",
-        data:[
-            {
-                read:false
-                message:"tes"
-            },
-            {
-                read:false,
-                message:"tes"
-            }
-        ]
-    }
-]
-*/
-
 conn.query("SELECT * FROM chat", (err, res) => {
     if(err) throw err;
     chat = JSON.parse(res[0])
@@ -94,6 +74,26 @@ app.post("/login", (req, res) => {
     }
 });
 
+/*
+chat =
+[
+    {
+        users:["abc", "xyz"],
+        data:[
+            {
+                from:0
+                read:false
+                message:"tes"
+            },
+            {
+                from:1
+                read:false,
+                message:"tes"
+            }
+        ]
+    }
+]
+*/
 wss.on("connection", ws => {
     ws.on("message", msg => {
         msg = JSON.parse(msg);
@@ -104,31 +104,24 @@ wss.on("connection", ws => {
                 break;
             //from, to, message
             case "chat":
-                if(isset(clients[msg.to])){
-                    clients[msg.to].send(JSON.stringify({
-                        type:"chat",
-                        message:msg.message
-                    }));
-                }
+                var a;
                 for(i in chat){
-                    if(chat[i].from == msg.from && chat[i].to == msg.to){
-                        chat[i].data.push({
+                    if(chat[i].users[0] == msg.from || chat[i].users[1] == msg.to && chat[i].users[1] == msg.to || chat[i].users[1] == msg.from){
+                        a = i;
+                        break;
+                    }
+                }
+                for(i in chat[a].users){
+                    if(chat[a].users[i] == msg.from){
+                        chat[a].data.push({
+                            from:i,
                             read:false,
                             message:msg.message
-                        });
+                        })
                     }
                 }
                 break;
             case "read":
-                for(i in chat){
-                    //from, to
-                    if(chat[i].to == msg.from && chat[i].from == msg.to){
-                        for(j in chat[i].data){
-                            chat[i].data[i].read = true;
-                        }
-                        break;
-                    }
-                }
                 break;
         }
     });
