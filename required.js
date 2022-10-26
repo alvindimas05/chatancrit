@@ -22,4 +22,9 @@ function isset(arg){
 app.use(bodyparser.urlencoded({extended:false}));
 app.use(cors());
 
-module.exports = app;
+module.exports = {
+    app:app,
+    randstring:randstring,
+    isset:isset,
+    conn:conn
+};
