@@ -8,17 +8,19 @@ isset = required.isset,
 randstring = required.randstring;
 
 var clients = {},
-chat = [];
+chat;
+
+function update_data(){
+    conn.query("UPDATE chat SET data=?", [JSON.stringify(chat)], err => {
+        if(err) throw err;
+    })
+}
 
 conn.query("SELECT * FROM chat", (err, res) => {
     if(err) throw err;
-    chat = JSON.parse(res[0])
+    chat = JSON.parse(res[0].data);
 
-    setInterval(() => {
-        conn.query("UPDATE SET data=?", [JSON.stringify(chat)], err => {
-            if(err) throw err;
-        })
-    }, 300000);
+    setInterval(() => update_data(), 300000);
 });
 
 app.post("/create", (req, res) => {
@@ -102,6 +104,29 @@ wss.on("connection", ws => {
             case "open":
                 clients[msg.id] = ws;
                 break;
+            //from, to
+            case "create":
+                conn.query("SELECT user_unique_id FROM user WHERE user_unique_id=?", [msg.to],
+                (err, res) => {
+                    if(err) throw err;
+                    if(res.length > 0){
+                        var found = false;
+                        for(i in chat){
+                            if(chat[i].users[0] == msg.from || chat[i].users[0] == msg.to && chat[i].users[1] == msg.to || chat[i].users[1] == msg.from){
+                                found = true;
+                                break;
+                            }
+                        }
+                        if(!found){
+                            chat.push({
+                                users:[msg.from, msg.to],
+                                data:[]
+                            });
+                            update_data();
+                        }
+                    }
+                });
+                break;
             //from, to, message
             case "chat":
                 var a;
@@ -117,11 +142,31 @@ wss.on("connection", ws => {
                             from:i,
                             read:false,
                             message:msg.message
-                        })
+                        });
+                        update_data();
+                        break;
                     }
                 }
                 break;
+            //from, to
             case "read":
+                var a;
+                for(i in chat){
+                    if(chat[i].users[0] == msg.from || chat[i].users[1] == msg.to && chat[i].users[1] == msg.to || chat[i].users[1] == msg.from){
+                        a = i;
+                        break;
+                    }
+                }
+                for(i in chat[a].users){
+                    if(chat[a].users[i] == msg.from){
+                        for(j in chat[a].data){
+                            if(chat[a].data[j].from == j){
+                                chat[a].data[j].read = true;
+                            }
+                        }
+                        break;
+                    }
+                }
                 break;
         }
     });
