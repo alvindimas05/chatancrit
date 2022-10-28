@@ -80,30 +80,53 @@ app.post("/login", (req, res) => {
 chat =
 [
     {
-        users:["abc", "xyz"],
-        data:[
-            {
-                from:0
-                read:false
-                message:"tes"
-            },
-            {
-                from:1
-                read:false,
-                message:"tes"
-            }
-        ]
+        me:"abc",
+        data:{
+            "xyz":[
+                {
+                    me:false,
+                    message:"tes"
+                },
+                {
+                    me:true,
+                    message:"tes"
+                }
+            ]
+            "def":[]
+        }
     }
 ]
 */
 wss.on("connection", ws => {
+    function WSSend(obj){
+        ws.send(JSON.stringify(obj));
+    }
     ws.on("message", msg => {
-        console.log(msg);
         msg = JSON.parse(msg);
         switch(msg.type){
             //id
             case "open":
                 clients[msg.id] = ws;
+                var found = false;
+                //Mengecek data dari user
+                for(i in chat){
+                    //Jika user ada, data dikirim
+                    if(chat[i].me == msg.id){
+                        found = true;
+                        WSSend({
+                            type:"load",
+                            status:true,
+                            data:chat[i].data
+                        });
+                    }
+                }
+                //Jika user tidak ada, data dibuat
+                if(!found){
+                    chat.push({
+                        me:msg.id,
+                        data:{}
+                    });
+                }
                 break;
             //from, to
             case "create":
@@ -113,63 +136,61 @@ wss.on("connection", ws => {
                     if(res.length > 0){
                         var found = false;
                         for(i in chat){
-                            if(chat[i].users[0] == msg.from || chat[i].users[0] == msg.to && chat[i].users[1] == msg.to || chat[i].users[1] == msg.from){
+                            if(chat[i].me == msg.from && isset(chat[i].data[msg.to])){
                                 found = true;
                                 break;
                             }
                         }
-                        if(!found){
-                            chat.push({
-                                users:[msg.from, msg.to],
-                                data:[]
+                        if(found){
+                            WSSend({
+                                type:"create",
+                                status:false,
+                                message:"Chat already created!"
+                            });
+                        } else {
+                            chat[i].data[msg.from] = [];
+                            WSSend({
+                                type:"create",
+                                status:true,
+                                id:msg.to
                             });
                         }
+                    } else {
+                        WSSend({
+                            type:"create",
+                            status:false,
+                            message:"User not found!"
+                        });
                     }
                 });
                 break;
             //from, to, message
             case "chat":
-                var a;
+                var found = false;
                 for(i in chat){
-                    if(chat[i].users[0] == msg.from || chat[i].users[1] == msg.to && chat[i].users[1] == msg.to || chat[i].users[1] == msg.from){
-                        a = i;
-                        break;
-                    }
-                }
-                for(i in chat[a].users){
-                    if(chat[a].users[i] == msg.from){
+                    if(chat[i].me == msg.from){
+                        if(!isset(chat[i].data[msg.to])){
+                            chat[i].data[msg.to] = [];
+                        }
+                        chat[i].data[msg.to].push({
+                            me:true,
+                            message:msg.message
+                        });
+                    } else if(chat[i].me == msg.to){
                         if(isset(clients[msg.to])){
                             clients[msg.to].send(JSON.stringify({
+                                type:"chat",
                                 from:msg.from,
                                 message:msg.message
                             }));
                         }
-                        chat[a].data.push({
-                            from:i,
-                            read:false,
+                        if(!isset(chat[i].data[msg.from])){
+                            chat[i].data[msg.from] = [];
+                        }
+                        chat[i].data[msg.from].push({
+                            me:false,
                             message:msg.message
                         });
-                        break;
-                    }
-                }
-                break;
-            //from, to
-            case "read":
-                var a;
-                for(i in chat){
-                    if(chat[i].users[0] == msg.from || chat[i].users[1] == msg.to && chat[i].users[1] == msg.to || chat[i].users[1] == msg.from){
-                        a = i;
-                        break;
-                    }
-                }
-                for(i in chat[a].users){
-                    if(chat[a].users[i] == msg.from){
-                        for(j in chat[a].data){
-                            if(chat[a].data[j].from == j){
-                                chat[a].data[j].read = true;
-                            }
-                        }
-                        break;
                     }
                 }
                 break;

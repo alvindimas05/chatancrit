@@ -16,7 +16,7 @@ function randstring(length = 20) {
 }
 
 function isset(arg){
-    return typeof arg === undefined ? false : true;
+    return arg === undefined ? false : true;
 }
 
 app.use(bodyparser.urlencoded({extended:false}));

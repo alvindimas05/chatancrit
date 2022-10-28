@@ -5,7 +5,63 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <style>li{list-style-type:none}</style>
     <title>Chat</title>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <script src="cookie.js"></script>
+    <script>
+        var id = getCookie("id"),
+        cur_id,
+        chat_data = {};
+        if(getCookie("id") === null){
+            location.href = "login.html";
+        }
+        const ws = new WebSocket("ws://localhost:8080");
+        function WSSend(obj){
+            ws.send(JSON.stringify(obj));
+        }
+        ws.onopen = () => {
+            WSSend({
+                type:"open",
+                id:id
+            });
+        }
+        function create(){
+            WSSend({
+                type:"create",
+                from:id,
+                to:$("#to_id").val()
+            });
+        }
+        function send(){
+            var txt = $("#message").val();
+            if(txt !== "" && cur_id !== undefined){
+                $("#display_chat")[0].innerHTML += `
+                <li>
+                    <div class="me">${txt}</div>
+                </li>`;
+                WSSend({
+                    type:"chat",
+                    from:id,
+                    to:cur_id,
+                    message:txt
+                });
+            }
+        }
+        function addClick(){
+            cur_id = this.getAttribute("chat-data-id");
+            $("#display_chat").html("");
+            for(i in chat_data[cur_id]){
+                var data = chat_data[cur_id][i];
+                console.log(data);
+                $("#display_chat")[0].innerHTML += `
+                <li>
+                    <div class="${data.me == true ? "me" : "you"}">${data.message}</div>
+                </li>`;
+            }
+        }
+        $(".friend").on("click", addClick);
+    </script>
 </head>
 <body>
     <div class="top"></div>
@@ -16,187 +72,111 @@
                 <h2>WhatsUp!</h2>
             </div>
             <div class="search">
-                <input type="text" class="inp1" placeholder="Search or start a new chat">
-                <button class="ico"><img src="search.png" class="icon1"></button>
+                <input type="text" class="inp1" id="to_id" placeholder="Enter an id to start a new chat">
+                <button class="ico" onclick="create()"><img src="search.png" class="icon1"></button>
             </div>
             <div class="chat_list">
-            <ul>
-                <li>
-                    <button class="friend">
-                        <div class="img_name">
-                            <img src="profile.png" class="ava">
-                            <div>
-                                <h3>Icikiwir</h3>
-                                <p>Temporibus cum, eve...</p>
-                            </div>
-                        </div>
-                       <div class="time">Today</div>
-                    </button>
-                </li>
-                <li>
-                    <button class="friend">
-                        <div class="img_name">
-                            <img src="profile.png" class="ava">
-                            <div>
-                            <h3>Aselole</h3>
-                            <p><span>Typing...</span></p>
-                        </div>
-                        </div>
-                       <div class="time">Today</div>
-                    </button>
-                </li>
-                <li>
-                    <button class="friend">
-                        <div class="img_name">
-                            <img src="profile.png" class="ava">
-                            <div>
-                            <h3>Simlilikitiw</h3>
-                            <p><span>Typing...</span></p>
-                        </div>
-                        </div>
-                       <div class="time">Today</div>
-                    </button>
-                </li>
-                <li>
-                    <button class="friend">
-                        <div class="img_name">
-                            <img src="profile.png" class="ava">
-                            <div>
-                            <h3>Slebew</h3>
-                            <p><span>Typing...</span></p>
-                        </div>
-                        </div>
-                       <div class="time">Today</div>
-                    </button>
-                </li>
-                <li>
-                    <button class="friend">
-                        <div class="img_name">
-                            <img src="profile.png" class="ava">
-                            <div>
-                            <h3>Orang Baik</h3>
-                            <p><span>Typing...</span></p>
-                        </div>
-                        </div>
-                       <div class="time">Today</div>
-                    </button>
-                </li>
-                <li>
-                    <button class="friend">
-                        <div class="img_name">
-                            <img src="profile.png" class="ava">
-                            <div>
-                            <h3>Orang Gila</h3>
-                            <p><span>Typing...</span></p>
-                        </div>
-                        </div>
-                       <div class="time">Today</div>
-                    </button>
-                </li>
-                <li>
-                    <button class="friend">
-                        <div class="img_name">
-                            <img src="profile.png" class="ava">
-                            <div>
-                            <h3>Wibu</h3>
-                            <p><span>Typing...</span></p>
-                        </div>
-                        </div>
-                       <div class="time">Today</div>
-                    </button>
-                </li>
-                <li>
-                    <button class="friend">
-                        <div class="img_name">
-                            <img src="profile.png" class="ava">
-                            <div>
-                            <h3>Kpoper</h3>
-                            <p><span>Typing...</span></p>
-                        </div>
-                        </div>
-                       <div class="time">Today</div>
-                    </button>
-                </li>
-                <li>
-                    <button class="friend">
-                        <div class="img_name">
-                            <img src="profile.png" class="ava">
-                            <div>
-                            <h3>Ambatukam</h3>
-                            <p><span>Typing...</span></p>
-                        </div>
-                        </div>
-                       <div class="time">Today</div>
-                    </button>
-                </li>
-                <li>
-                    <button class="friend">
-                        <div class="img_name">
-                            <img src="profile.png" class="ava">
-                            <div>
-                            <h3>Mang Garox</h3>
-                            <p><span>Typing...</span></p>
-                        </div>
-                        </div>
-                       <div class="time">Today</div>
-                    </button>
-                </li>
-            </ul>
-        </div>
+                <ul id="chat_list"></ul>
+            </div>
         </div>
         <div class="right">
             <div class="right_top">
                 <div class="img_name">
                     <img src="profile.png" class="ava">
                     <div class="profile">
-                        <h3>Icikiwir</h3>
-                        <p>Active 5 minutes ago..</p>
+                        <h3 id="f_username"></h3>
+                        <!-- <p>Active 5 minutes ago..</p> -->
                     </div>
                     <img src="menu.png" class="icon2">
                 </div>
             </div>
             <div class="right_mid">
                 <div class="chat">
-                    <ul>
-
-                        <li>
-                            <div class="you">
-                                <p>Temporibus cum, eveniet reiciendis et vel similique enim nesciunt quibusdam nostrum alias assumenda harum.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="me">
-                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="you">
-                                <p>Temporibus cum, eveniet reiciendis et vel similique enim nesciunt quibusdam nostrum alias assumenda harum.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="me">
-                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
-                            </div>
-                        </li>
-                        <li>
-                            <div class="you">
-                                <p>Temporibus cum, eveniet reiciendis et vel similique enim nesciunt quibusdam nostrum alias assumenda harum.</p>
-                            </div>
-                        </li>
-                    </ul>
+                    <ul id="display_chat"></ul>
                 </div>
             </div>
             <div class="right_bot">
                 <div class="chatbox">
-                    <input type="text" placeholder="Type message" class="inp2">
+                    <input type="text" placeholder="Type message" class="inp2" id="message">
                 </div>
                 <div class="send">
-                    <button><img src="send.png"></button>
+                    <button onclick="send()"><img src="send.png"></button>
                 </div>
             </div>
         </div>
     </div>
-
+    <script>
+        function reloadClick(){
+            $(".friend").off("click", addClick, true);
+            $(".friend").on("click", addClick);
+        }
+        ws.onmessage = msg => {
+            msg = JSON.parse(msg.data);
+            switch(msg.type){
+                case "load":
+                    if(msg.status){
+                        chat_data = msg.data;
+                        console.log(chat_data);
+                        for(i in msg.data){
+                            $("#chat_list")[0].innerHTML += `
+                            <li>
+                                <button class="friend" chat-data-id="${i}">
+                                    <div class="img_name">
+                                        <img src="profile.png" class="ava">
+                                        <div>
+                                            <h3>${i}</h3>
+                                        </div>
+                                    </div>
+                                </button>
+                            </li>`;
+                        }
+                        reloadClick();
+                    }
+                    break;
+                case "create":
+                    if(msg.status){
+                        chat_data[msg.id] = [];
+                        $("#chat_list")[0].innerHTML += `
+                        <li>
+                            <button class="friend" chat-data-id="${msg.id}">
+                                <div class="img_name">
+                                    <img src="profile.png" class="ava">
+                                    <div>
+                                        <h3>${msg.id}</h3>
+                                    </div>
+                                </div>
+                            </button>
+                        </li>`;
+                        reloadClick();
+                    } else {
+                        alert(msg.message);
+                    }
+                    break;
+                case "chat":
+                    if(chat_data[msg.from] === undefined){
+                        chat_data[msg.from] = [];
+                        $("#chat_list")[0].innerHTML += `
+                            <li>
+                                <button class="friend" chat-data-id="${i}">
+                                    <div class="img_name">
+                                        <img src="profile.png" class="ava">
+                                        <div>
+                                            <h3>${i}</h3>
+                                        </div>
+                                    </div>
+                                </button>
+                            </li>`;
+                    }
+                    chat_data[msg.from].push(msg.message);
+                    if(cur_id == msg.from){
+                        $("#display_chat")[0].innerHTML += `
+                        <li>
+                            <div class="${msg.me == true ? "me" : "you"}">${msg.message}</div>
+                        </li>`;
+                    }
+                    break;
+            }
+        }
+    </script>
 </body>
 </html>
