@@ -51,9 +51,9 @@
         function addClick(){
             cur_id = this.getAttribute("chat-data-id");
             $("#display_chat").html("");
+            $("#f_username").html(cur_id);
             for(i in chat_data[cur_id]){
                 var data = chat_data[cur_id][i];
-                console.log(data);
                 $("#display_chat")[0].innerHTML += `
                 <li>
                     <div class="${data.me == true ? "me" : "you"}">${data.message}</div>
@@ -116,7 +116,6 @@
                 case "load":
                     if(msg.status){
                         chat_data = msg.data;
-                        console.log(chat_data);
                         for(i in msg.data){
                             $("#chat_list")[0].innerHTML += `
                             <li>
