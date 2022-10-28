@@ -3,4 +3,5 @@
 Progress :
 
 - Login dan Create-Account Page (Tested)
-- Chat Websocket
+- Chat Websocket (Tested)
+- Desain Web Chat

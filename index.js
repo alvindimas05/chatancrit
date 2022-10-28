@@ -59,7 +59,7 @@ app.post("/create", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-    //username, password
+    //username, password,
     if(isset(req.body.username) && isset(req.body.password)){
         conn.query("SELECT user_unique_id FROM user WHERE username=? AND password=?",
         [req.body.username, req.body.password], (err, rem) => {
@@ -98,6 +98,7 @@ chat =
 */
 wss.on("connection", ws => {
     ws.on("message", msg => {
+        console.log(msg);
         msg = JSON.parse(msg);
         switch(msg.type){
             //id
@@ -122,7 +123,6 @@ wss.on("connection", ws => {
                                 users:[msg.from, msg.to],
                                 data:[]
                             });
-                            update_data();
                         }
                     }
                 });
@@ -138,12 +138,17 @@ wss.on("connection", ws => {
                 }
                 for(i in chat[a].users){
                     if(chat[a].users[i] == msg.from){
+                        if(isset(clients[msg.to])){
+                            clients[msg.to].send(JSON.stringify({
+                                from:msg.from,
+                                message:msg.message
+                            }));
+                        }
                         chat[a].data.push({
                             from:i,
                             read:false,
                             message:msg.message
                         });
-                        update_data();
                         break;
                     }
                 }

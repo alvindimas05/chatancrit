@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="styleLogin.css">
+    <title>Login</title>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <script>
+        var base_url = "http://localhost/";
+        function login(){
+            $.post(base_url + "login", {
+                username:$("#username").val(),
+                password:$("#password").val()
+            }, res => {
+                if(res.status){}
+                else alert("Username atau Password salah!");
+            })
+        }
+    </script>
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="box">
+        <div class="left" align="center">
+            <img src="logo.png">
+            <h2>WhatsUp!</h2>
+        </div>
+        <div class="right" align="center">
+            <h2>Log in</h2>
+            <div class="user">
+                <img src="username.png" class="usn_img">
+                <input type="text" placeholder="Username" id="username" class="usn">
+            </div>
+            <div class="password">
+                <img src="password.png" class="psw_img">
+                <input type="password" placeholder="Password" id="password" class="psw">
+            </div>
+            <div class="btn_login">
+                <button>Login</button>
+            </div>
+            <div class="regist" >
+                <p>Don't have account?</p>
+                <a href="register.html">Sign Up</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

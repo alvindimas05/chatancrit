@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="styleRegist.css">
+    <title>Register</title>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <script>
+        var base_url = "http://localhost/";
+        function register(){
+            $.post(base_url + "create", {
+                username:$("#username").val(),
+                password:$("#password").val(),
+                vpassword:$("#vpassword").val()
+            }, res => {
+                if(res.status){
+                    alert("Akun sukses dibuat!");
+                    location.href = "login.html";
+                } else {
+                    alert(res.message);
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="box">
+        <div class="left" align="center">
+            <img src="logo.png">
+            <h2>Welcome to WhatsUp!</h2>
+        </div>
+        <div class="right" align="center">
+            <h2>Register</h2>
+            <div class="user">
+                <img src="username.png" class="usn_img">
+                <input type="text" placeholder="Username" id="username" class="usn">
+            </div>
+            <div class="password">
+                <img src="password.png" class="psw_img">
+                <input type="password" placeholder="Password" id="password" class="psw">
+            </div>
+            <div class="password">
+                <img src="password.png" class="psw_img">
+                <input type="password" placeholder="Repeat your password" id="vpassword" class="psw">
+            </div>
+            <div class="btn_reg">
+                <button>Register</button>
+            </div>
+</body>
+</html>

@@ -22,6 +22,12 @@ function isset(arg){
 app.use(bodyparser.urlencoded({extended:false}));
 app.use(cors());
 
+app.use(express.static("public"));
+
+app.get("/", (req, res) => {
+    res.redirect("/login.html")
+});
+
 module.exports = {
     app:app,
     randstring:randstring,
