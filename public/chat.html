@@ -16,7 +16,7 @@
         if(getCookie("id") === null){
             location.href = "login.html";
         }
-        const ws = new WebSocket("ws://localhost:8080");
+        const ws = new WebSocket("ws://" + window.location.host +":8080");
         function WSSend(obj){
             ws.send(JSON.stringify(obj));
         }
@@ -40,6 +40,10 @@
                 <li>
                     <div class="me">${txt}</div>
                 </li>`;
+                chat_data[cur_id].push({
+                    me:true,
+                    message:txt
+                });
                 WSSend({
                     type:"chat",
                     from:id,
@@ -156,17 +160,21 @@
                         chat_data[msg.from] = [];
                         $("#chat_list")[0].innerHTML += `
                             <li>
-                                <button class="friend" chat-data-id="${i}">
+                                <button class="friend" chat-data-id="${msg.from}">
                                     <div class="img_name">
                                         <img src="profile.png" class="ava">
                                         <div>
-                                            <h3>${i}</h3>
+                                            <h3>${msg.from}</h3>
                                         </div>
                                     </div>
                                 </button>
                             </li>`;
+                        reloadClick();
                     }
-                    chat_data[msg.from].push(msg.message);
+                    chat_data[msg.from].push({
+                        me:false,
+                        message:msg.message
+                    });
                     if(cur_id == msg.from){
                         $("#display_chat")[0].innerHTML += `
                         <li>

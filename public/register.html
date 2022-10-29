@@ -8,9 +8,8 @@
     <title>Register</title>
     <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
     <script>
-        var base_url = "http://localhost/";
         function register(){
-            $.post(base_url + "create", {
+            $.post("create", {
                 username:$("#username").val(),
                 password:$("#password").val(),
                 vpassword:$("#vpassword").val()

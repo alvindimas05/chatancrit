@@ -1,7 +1,10 @@
 const conn = require("./mysql"),
 required = require("./required"),
 WS = require("ws"),
-wss = new WS.WebSocketServer({port:8080}),
+wss = new WS.WebSocketServer({
+    host:"0.0.0.0",
+    port:8080
+}),
 
 app = required.app,
 isset = required.isset,
