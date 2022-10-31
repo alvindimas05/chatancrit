@@ -7,8 +7,7 @@ wss = new WS.WebSocketServer({
 }),
 
 app = required.app,
-isset = required.isset,
-randstring = required.randstring;
+isset = required.isset;
 
 var clients = {},
 chat;
@@ -16,14 +15,12 @@ chat;
 function update_data(){
     conn.query("UPDATE chat SET data=?", [JSON.stringify(chat)], err => {
         if(err) throw err;
-    })
+    });
 }
 
 conn.query("SELECT * FROM chat", (err, res) => {
     if(err) throw err;
     chat = JSON.parse(res[0].data);
-
-    setInterval(() => update_data(), 300000);
 });
 
 app.post("/create", (req, res) => {
@@ -40,9 +37,8 @@ app.post("/create", (req, res) => {
                         message:"Username already used!"
                     })
                 } else {
-                    var id = randstring();
-                    conn.query("INSERT INTO user(user_unique_id, username, password, display_name) VALUES(?,?,?,?)",
-                    [id, req.body.username, req.body.password, req.body.username], err => {
+                    conn.query("INSERT INTO user(username, password, display_name) VALUES(?,?,?,?)",
+                    [req.body.username, req.body.password, req.body.username], err => {
                         if(err) throw err;
                         //status
                         res.json({
@@ -62,16 +58,17 @@ app.post("/create", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-    //username, password,
+    //username, password
+    console.log(req.body);
     if(isset(req.body.username) && isset(req.body.password)){
-        conn.query("SELECT user_unique_id FROM user WHERE username=? AND password=?",
+        conn.query("SELECT username FROM user WHERE username=? AND password=?",
         [req.body.username, req.body.password], (err, rem) => {
             if(err) throw err;
             if(rem.length > 0)
             //status, id
             res.json({
                 status:true,
-                id:rem[0].user_unique_id
+                id:rem[0].username
             });
             //status
             else res.json({status:false});
@@ -80,24 +77,20 @@ app.post("/login", (req, res) => {
 });
 
 /*
-chat =
+chat = 
 [
-    {
-        me:"abc",
-        data:{
-            "xyz":[
-                {
-                    me:false,
-                    message:"tes"
-                },
-                {
-                    me:true,
-                    message:"tes"
-                }
-            ]
-            "def":[]
-        }
-    }
+    "abc":[
+        "xyz":[
+            {
+                me:false,
+                message:"tes"
+            },
+            {
+                me:true,
+                message:"tes"
+            }
+        ]
+    ]
 ]
 */
 wss.on("connection", ws => {
@@ -110,21 +103,14 @@ wss.on("connection", ws => {
             //id
             case "open":
                 clients[msg.id] = ws;
-                var found = false;
                 //Mengecek data dari user
-                for(i in chat){
-                    //Jika user ada, data dikirim
-                    if(chat[i].me == msg.id){
-                        found = true;
-                        WSSend({
-                            type:"load",
-                            status:true,
-                            data:chat[i].data
-                        });
-                    }
-                }
-                //Jika user tidak ada, data dibuat
-                if(!found){
+                if(isset(chat[msg.id])){
+                    WSSend({
+                        type:"load",
+                        status:true,
+                        data:chat[i].data
+                    });
+                } else {
                     chat.push({
                         me:msg.id,
                         data:{}
@@ -133,18 +119,11 @@ wss.on("connection", ws => {
                 break;
             //from, to
             case "create":
-                conn.query("SELECT user_unique_id FROM user WHERE user_unique_id=?", [msg.to],
+                conn.query("SELECT username FROM user WHERE username=?", [msg.to],
                 (err, res) => {
                     if(err) throw err;
                     if(res.length > 0){
-                        var found = false;
-                        for(i in chat){
-                            if(chat[i].me == msg.from && isset(chat[i].data[msg.to])){
-                                found = true;
-                                break;
-                            }
-                        }
-                        if(found){
+                        if(isset(chat[msg.from]) && isset(chat[msg.from].data[msg.to])){
                             WSSend({
                                 type:"create",
                                 status:false,
@@ -169,32 +148,29 @@ wss.on("connection", ws => {
                 break;
             //from, to, message
             case "chat":
-                var found = false;
-                for(i in chat){
-                    if(chat[i].me == msg.from){
-                        if(!isset(chat[i].data[msg.to])){
-                            chat[i].data[msg.to] = [];
-                        }
-                        chat[i].data[msg.to].push({
-                            me:true,
-                            message:msg.message
-                        });
-                    } else if(chat[i].me == msg.to){
-                        if(isset(clients[msg.to])){
-                            clients[msg.to].send(JSON.stringify({
-                                type:"chat",
-                                from:msg.from,
-                                message:msg.message
-                            }));
-                        }
-                        if(!isset(chat[i].data[msg.from])){
-                            chat[i].data[msg.from] = [];
-                        }
-                        chat[i].data[msg.from].push({
-                            me:false,
-                            message:msg.message
-                        });
+                if(isset(chat[msg.from])){
+                    if(!isset(chat[msg.from].data[msg.to])){
+                        chat[msg.from].data[msg.to] = [];
                     }
+                    chat[msg.from].data[msg.to].push({
+                        me:true,
+                        message:msg.message
+                    });
+                } else {
+                    if(isset(clients[msg.to])){
+                        clients[msg.to].send(JSON.stringify({
+                            type:"chat",
+                            from:msg.from,
+                            message:msg.message
+                        }));
+                    }
+                    if(!isset(chat[msg.from].data[msg.from])){
+                        chat[msg.from].data[msg.from] = [];
+                    }
+                    chat[msg.from].data[msg.from].push({
+                        me:false,
+                        message:msg.message
+                    });
                 }
                 break;
         }
