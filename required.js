@@ -1,6 +1,5 @@
 const express = require("express"),
 bodyparser = require("body-parser"),
-conn = require("./mysql");
 cors = require("cors"),
 app = express();
 
@@ -30,7 +29,5 @@ app.get("/", (req, res) => {
 
 module.exports = {
     app:app,
-    randstring:randstring,
-    isset:isset,
-    conn:conn
+    isset:isset
 };
