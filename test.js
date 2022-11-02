@@ -1,11 +1,21 @@
-const axios = require("axios").default || require("axios");
-
-axios.post("http://localhost/create", {
-    username:"test",
-    password:"test",
-    vpassword:"test"
-}, {
+const axios = require("axios").default || require("axios"),
+base_url = "http://localhost/",
+headers = {
     headers:{
         "Content-Type":"application/x-www-form-urlencoded"
     }
-}).then(res => console.log(res.data));
+}
+
+axios.post(base_url + "create", {
+    username:"test",
+    password:"test",
+    vpassword:"test"
+}, headers)
+.then(res => console.log(res.data.status));
+
+axios.post(base_url + "create", {
+    username:"user",
+    password:"user",
+    vpassword:"user"
+}, headers)
+.then(res => console.log(res.data.status));

@@ -15,7 +15,7 @@
                 password:$("#password").val()
             }, res => {
                 if(res.status){
-                    setCookie("id", res.id, 360);
+                    setCookie("id", $("#username").val(), 360);
                     location.href = "chat.html";
                 }
                 else alert("Username atau Password salah!");

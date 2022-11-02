@@ -1,65 +1,58 @@
-const db = require("./firebase"),
+const db = require("./db"),
+User = db.User,
+Data = db.Data,
 required = require("./required"),
 
 app = required.app,
 isset = required.isset;
 
-app.post("/create", (req, res) => {
+app.post("/create", async (req, res) => {
     //username, password, vpassword
     var body = req.body;
-    //Mengecek request parameters
     if(isset(body.username) && isset(body.password) && isset(body.vpassword)){
-        //Mengecek jika verifikasi password sama
         if(body.password == body.vpassword){
-            var found = false,
-            coll = db.collection("users");
-
-            //Mengecek jika username sudah dipakai
-            coll.doc(body.username).get()
-            .then(rel => {
-                if(rel.exists) found = true;
+            var data = await User.find({
+                username:body.username,
+                password:body.password
             });
 
-            if(found)
+            if(data.length > 0)
             //status, message
             res.json({
                 status:false,
                 message:"Username already used!"
-            })
+            });
             else {
-                coll.doc(body.username).set({
+                await (new User({
+                    username:body.username,
                     password:body.password,
-                    online:null
-                });
+                    online:""
+                })).save();
+                await (new Data({
+                    username:body.username,
+                    data:{}
+                })).save();
                 res.json({status:true});
             }
-        } else {
-            //status, message
-            res.json({
-                status:false,
-                message:"Password verification is not same!"
-            })
-        }
+        } else
+        //status, message
+        res.json({
+            status:false,
+            message:"Password verification is not same!"
+        });
     }
 });
 
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
     //username, password
     var body = req.body;
-    //Mengecek request parameters
     if(isset(body.username) && isset(body.password)){
-        //Mengecek jika data ada
-        db.collection("users").doc(body.username).get()
-        .then(rel => {
-            if(rel.exists && rel.password == body.password)
-            //status, id
-            res.json({
-                status:true,
-                id:rem[0].username
-            });
-            //status
-            else res.json({status:false});
-        })
+        var data = await User.find({
+            username:body.username
+        });
+        res.json({
+            status:data.length > 0 ? true : false
+        });
     }
 });
 

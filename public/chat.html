@@ -119,7 +119,7 @@
             switch(msg.type){
                 case "load":
                     if(msg.status){
-                        chat_data = msg.data;
+                        chat_data = msg;
                         for(i in msg.data){
                             $("#chat_list")[0].innerHTML += `
                             <li>
@@ -151,9 +151,7 @@
                             </button>
                         </li>`;
                         reloadClick();
-                    } else {
-                        alert(msg.message);
-                    }
+                    } else alert(msg.message);
                     break;
                 case "chat":
                     if(chat_data[msg.from] === undefined){
