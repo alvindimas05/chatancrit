@@ -23,10 +23,17 @@ dataSchema = new mongoose.Schema({
   data:Object
 }),
 
+onlineSchema = new mongoose.Schema({
+  username:String,
+  data:Array
+}),
+
 User = db.model("users", userSchema),
-Data = db.model("datas", dataSchema);
+Data = db.model("datas", dataSchema),
+Online = db.model("onlines", onlineSchema);
 
 module.exports = {
   User:User,
-  Data:Data
+  Data:Data,
+  Online:Online
 }

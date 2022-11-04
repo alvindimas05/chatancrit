@@ -21,6 +21,7 @@
             ws.send(JSON.stringify(obj));
         }
         ws.onopen = () => {
+            console.log("Aseli");
             WSSend({
                 type:"open",
                 id:id
@@ -118,23 +119,21 @@
             msg = JSON.parse(msg.data);
             switch(msg.type){
                 case "load":
-                    if(msg.status){
-                        chat_data = msg;
-                        for(i in msg.data){
-                            $("#chat_list")[0].innerHTML += `
-                            <li>
-                                <button class="friend" chat-data-id="${i}">
-                                    <div class="img_name">
-                                        <img src="profile.png" class="ava">
-                                        <div>
-                                            <h3>${i}</h3>
-                                        </div>
+                    chat_data = msg.data;
+                    for(i in msg.data){
+                        $("#chat_list")[0].innerHTML += `
+                        <li>
+                            <button class="friend" chat-data-id="${i}">
+                                <div class="img_name">
+                                    <img src="profile.png" class="ava">
+                                    <div>
+                                        <h3>${i}</h3>
                                     </div>
-                                </button>
-                            </li>`;
-                        }
-                        reloadClick();
+                                </div>
+                            </button>
+                        </li>`;
                     }
+                    reloadClick();
                     break;
                 case "create":
                     if(msg.status){

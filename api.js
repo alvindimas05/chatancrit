@@ -1,3 +1,5 @@
+const { Online } = require("./db");
+
 const db = require("./db"),
 User = db.User,
 Data = db.Data,
@@ -26,12 +28,16 @@ app.post("/create", async (req, res) => {
                 await (new User({
                     username:body.username,
                     password:body.password,
-                    online:""
+                    online:null
                 })).save();
                 await (new Data({
                     username:body.username,
-                    data:{}
+                    data:null
                 })).save();
+                await (new Online({
+                    username:body.username,
+                    data:null
+                }))
                 res.json({status:true});
             }
         } else
